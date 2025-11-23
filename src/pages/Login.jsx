@@ -128,7 +128,7 @@ export default function Login({ onLogin }) {
           disabled={loading}
           onClick={() => {
             if (!username || !password) {
-              setErr('⚠️ Isi username dan password untuk registrasi')
+              setErr('Isi username dan password untuk registrasi')
               return
             }
             setLoading(true)
@@ -145,7 +145,7 @@ export default function Login({ onLogin }) {
                     setSuccess('✅ Registrasi berhasil, silakan login.')
                     setErr(null)
                 } else {
-                  setErr(data && data.message ? data.message : '⚠️ Registrasi gagal')
+                  setErr(data && data.message ? data.message : 'Registrasi gagal')
                     setSuccess(null)
                 }
               })
