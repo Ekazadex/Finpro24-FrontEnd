@@ -18,7 +18,19 @@ export default function Main({ username }) {
 
   function fetchFiles() {
     const url = 'https://firefly-arid-nellie.ngrok-free.dev/api/files?username=' + encodeURIComponent(username)
-    fetch(url).then(r => r.json()).then(d => setFiles(d.files || [])).catch(() => setFiles([]))
+    fetch(url, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+      .then(r => {
+        if (!r.ok) {
+          console.error('fetchFiles error:', r.status, r.statusText)
+          return { files: [] }
+        }
+        return r.json()
+      })
+      .then(d => setFiles(d.files || []))
+      .catch(err => {
+        console.error('fetchFiles exception:', err)
+        setFiles([])
+      })
   }
 
   function uploadFile(file) {
@@ -83,7 +95,9 @@ export default function Main({ username }) {
 
   function fetchLogs() {
     const url = LOGS_TOKEN ? 'https://firefly-arid-nellie.ngrok-free.dev/api/logs' : 'https://firefly-arid-nellie.ngrok-free.dev/api/logs?debug=true'
-    const headers = {}
+    const headers = {
+      'ngrok-skip-browser-warning': 'true'
+    }
     if (LOGS_TOKEN) headers['x-logs-token'] = LOGS_TOKEN
     fetch(url, { headers })
       .then(async (r) => {
