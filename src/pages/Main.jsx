@@ -17,7 +17,7 @@ export default function Main({ username }) {
   useEffect(() => { fetchFiles() }, [])
 
   function fetchFiles() {
-    const url = 'http://localhost:4000/api/files?username=' + encodeURIComponent(username)
+    const url = 'https://firefly-arid-nellie.ngrok-free.dev/api/files?username=' + encodeURIComponent(username)
     fetch(url).then(r => r.json()).then(d => setFiles(d.files || [])).catch(() => setFiles([]))
   }
 
@@ -50,7 +50,7 @@ export default function Main({ username }) {
       setMsg({ type: 'error', text: 'Network error' })
       setUploading(false)
     })
-    xhr.open('POST', 'http://localhost:4000/api/upload')
+    xhr.open('POST', 'https://firefly-arid-nellie.ngrok-free.dev/api/upload')
     xhr.send(formData)
   }
 
@@ -72,7 +72,7 @@ export default function Main({ username }) {
   }
 
   function download(filename) {
-    const url = 'http://localhost:4000/api/download?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(filename)
+    const url = 'https://firefly-arid-nellie.ngrok-free.dev/api/download?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(filename)
     const a = document.createElement('a')
     a.href = url
     a.download = filename
@@ -82,7 +82,7 @@ export default function Main({ username }) {
   }
 
   function fetchLogs() {
-    const url = LOGS_TOKEN ? 'http://localhost:4000/api/logs' : 'http://localhost:4000/api/logs?debug=true'
+    const url = LOGS_TOKEN ? 'https://firefly-arid-nellie.ngrok-free.dev/api/logs' : 'https://firefly-arid-nellie.ngrok-free.dev/api/logs?debug=true'
     const headers = {}
     if (LOGS_TOKEN) headers['x-logs-token'] = LOGS_TOKEN
     fetch(url, { headers })
@@ -215,7 +215,7 @@ export default function Main({ username }) {
                   ev.stopPropagation()
                   if (!confirm('Delete "' + f.filename + '"? This will remove the file from the server.')) return
                   try {
-                    const u = 'http://localhost:4000/api/file?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(f.filename)
+                    const u = 'https://firefly-arid-nellie.ngrok-free.dev/api/file?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(f.filename)
                     const resp = await fetch(u, { 
                       method: 'DELETE',
                       headers: { 'x-delete-token': DELETE_TOKEN }

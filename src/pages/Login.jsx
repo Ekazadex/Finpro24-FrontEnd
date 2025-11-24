@@ -16,7 +16,7 @@ export default function Login({ onLogin }) {
     }
     setLoading(true)
     setErr(null)
-    fetch('http://localhost:4000/api/login', {
+    fetch('https://firefly-arid-nellie.ngrok-free.dev/api/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: username.trim(), password })
@@ -40,7 +40,7 @@ export default function Login({ onLogin }) {
     setUsername(uname)
     setPassword('')
     setTimeout(() => {
-      fetch('http://localhost:4000/api/login', {
+      fetch('https://firefly-arid-nellie.ngrok-free.dev/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: uname, password: '' })
@@ -133,7 +133,7 @@ export default function Login({ onLogin }) {
             }
             setLoading(true)
             setErr(null)
-            fetch('http://localhost:4000/api/register', {
+            fetch('https://firefly-arid-nellie.ngrok-free.dev/api/register', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ username: username.trim(), password })
