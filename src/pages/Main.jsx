@@ -63,6 +63,7 @@ export default function Main({ username }) {
       setUploading(false)
     })
     xhr.open('POST', 'https://firefly-arid-nellie.ngrok-free.dev/api/upload')
+    xhr.setRequestHeader('ngrok-skip-browser-warning', 'true')
     xhr.send(formData)
   }
 
@@ -232,7 +233,10 @@ export default function Main({ username }) {
                     const u = 'https://firefly-arid-nellie.ngrok-free.dev/api/file?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(f.filename)
                     const resp = await fetch(u, { 
                       method: 'DELETE',
-                      headers: { 'x-delete-token': DELETE_TOKEN }
+                      headers: { 
+                        'x-delete-token': DELETE_TOKEN,
+                        'ngrok-skip-browser-warning': 'true'
+                      }
                     })
                     if (!resp.ok) throw new Error('Status ' + resp.status)
                     setMsg({ type: 'success', text: 'File deleted' })

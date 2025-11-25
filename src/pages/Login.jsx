@@ -18,7 +18,10 @@ export default function Login({ onLogin }) {
     setErr(null)
     fetch('https://firefly-arid-nellie.ngrok-free.dev/api/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
+      },
       body: JSON.stringify({ username: username.trim(), password })
     })
       .then(r => r.json())
@@ -42,7 +45,10 @@ export default function Login({ onLogin }) {
     setTimeout(() => {
       fetch('https://firefly-arid-nellie.ngrok-free.dev/api/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
         body: JSON.stringify({ username: uname, password: '' })
       })
         .then(r => r.json())
@@ -135,7 +141,10 @@ export default function Login({ onLogin }) {
             setErr(null)
             fetch('https://firefly-arid-nellie.ngrok-free.dev/api/register', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: { 
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true'
+              },
               body: JSON.stringify({ username: username.trim(), password })
             })
               .then(r => r.json())
