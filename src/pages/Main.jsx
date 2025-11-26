@@ -17,8 +17,8 @@ export default function Main({ username }) {
   useEffect(() => { fetchFiles() }, [])
 
   function fetchFiles() {
-    const url = 'https://firefly-arid-nellie.ngrok-free.dev/api/files?username=' + encodeURIComponent(username)
-    fetch(url, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+    const url = 'https://moving-marie-affordable-nights.trycloudflare.com/api/files?username=' + encodeURIComponent(username)
+    fetch(url, { headers: {} })
       .then(r => {
         if (!r.ok) {
           console.error('fetchFiles error:', r.status, r.statusText)
@@ -62,7 +62,7 @@ export default function Main({ username }) {
       setMsg({ type: 'error', text: 'Network error' })
       setUploading(false)
     })
-    xhr.open('POST', 'https://firefly-arid-nellie.ngrok-free.dev/api/upload')
+    xhr.open('POST', 'https://moving-marie-affordable-nights.trycloudflare.com/api/upload')
     xhr.setRequestHeader('ngrok-skip-browser-warning', 'true')
     xhr.send(formData)
   }
@@ -85,7 +85,7 @@ export default function Main({ username }) {
   }
 
   function download(filename) {
-    const url = 'https://firefly-arid-nellie.ngrok-free.dev/api/download?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(filename)
+    const url = 'https://moving-marie-affordable-nights.trycloudflare.com/api/download?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(filename)
     const a = document.createElement('a')
     a.href = url
     a.download = filename
@@ -95,10 +95,8 @@ export default function Main({ username }) {
   }
 
   function fetchLogs() {
-    const url = LOGS_TOKEN ? 'https://firefly-arid-nellie.ngrok-free.dev/api/logs' : 'https://firefly-arid-nellie.ngrok-free.dev/api/logs?debug=true'
-    const headers = {
-      'ngrok-skip-browser-warning': 'true'
-    }
+    const url = LOGS_TOKEN ? 'https://moving-marie-affordable-nights.trycloudflare.com/api/logs' : 'https://moving-marie-affordable-nights.trycloudflare.com/api/logs?debug=true'
+    const headers = {}
     if (LOGS_TOKEN) headers['x-logs-token'] = LOGS_TOKEN
     fetch(url, { headers })
       .then(async (r) => {
@@ -230,7 +228,7 @@ export default function Main({ username }) {
                   ev.stopPropagation()
                   if (!confirm('Delete "' + f.filename + '"? This will remove the file from the server.')) return
                   try {
-                    const u = 'https://firefly-arid-nellie.ngrok-free.dev/api/file?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(f.filename)
+                    const u = 'https://moving-marie-affordable-nights.trycloudflare.com/api/file?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(f.filename)
                     const resp = await fetch(u, { 
                       method: 'DELETE',
                       headers: { 

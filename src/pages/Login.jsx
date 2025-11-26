@@ -16,11 +16,10 @@ export default function Login({ onLogin }) {
     }
     setLoading(true)
     setErr(null)
-    fetch('https://firefly-arid-nellie.ngrok-free.dev/api/login', {
+    fetch('https://moving-marie-affordable-nights.trycloudflare.com/api/login', {
       method: 'POST',
       headers: { 
-        'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({ username: username.trim(), password })
     })
@@ -43,11 +42,10 @@ export default function Login({ onLogin }) {
     setUsername(uname)
     setPassword('')
     setTimeout(() => {
-      fetch('https://firefly-arid-nellie.ngrok-free.dev/api/login', {
+      fetch('https://moving-marie-affordable-nights.trycloudflare.com/api/login', {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ username: uname, password: '' })
       })
@@ -139,11 +137,10 @@ export default function Login({ onLogin }) {
             }
             setLoading(true)
             setErr(null)
-            fetch('https://firefly-arid-nellie.ngrok-free.dev/api/register', {
+            fetch('https://moving-marie-affordable-nights.trycloudflare.com/api/register', {
               method: 'POST',
               headers: { 
-                'Content-Type': 'application/json',
-                'ngrok-skip-browser-warning': 'true'
+                'Content-Type': 'application/json'
               },
               body: JSON.stringify({ username: username.trim(), password })
             })
