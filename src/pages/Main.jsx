@@ -17,8 +17,8 @@ export default function Main({ username }) {
   useEffect(() => { fetchFiles() }, [])
 
   function fetchFiles() {
-    const url = 'https://andreas-identify-rolled-indirect.trycloudflare.com/api/files?username=' + encodeURIComponent(username)
-    fetch(url, { headers: {} })
+    const url = 'https://firefly-arid-nellie.ngrok-free.dev/api/files?username=' + encodeURIComponent(username)
+    fetch(url, { headers: { 'ngrok-skip-browser-warning': 'true' } })
       .then(r => {
         if (!r.ok) {
           console.error('fetchFiles error:', r.status, r.statusText)
@@ -62,7 +62,7 @@ export default function Main({ username }) {
       setMsg({ type: 'error', text: 'Network error' })
       setUploading(false)
     })
-    xhr.open('POST', 'https://andreas-identify-rolled-indirect.trycloudflare.com/api/upload')
+    xhr.open('POST', 'https://firefly-arid-nellie.ngrok-free.dev/api/upload')
     xhr.setRequestHeader('ngrok-skip-browser-warning', 'true')
     xhr.send(formData)
   }
@@ -85,7 +85,7 @@ export default function Main({ username }) {
   }
 
   function download(filename) {
-    const url = 'https://andreas-identify-rolled-indirect.trycloudflare.com/api/download?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(filename)
+    const url = 'https://firefly-arid-nellie.ngrok-free.dev/api/download?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(filename)
     const a = document.createElement('a')
     a.href = url
     a.download = filename
@@ -95,8 +95,10 @@ export default function Main({ username }) {
   }
 
   function fetchLogs() {
-    const url = LOGS_TOKEN ? 'https://andreas-identify-rolled-indirect.trycloudflare.com/api/logs' : 'https://andreas-identify-rolled-indirect.trycloudflare.com/api/logs?debug=true'
-    const headers = {}
+    const url = LOGS_TOKEN ? 'https://firefly-arid-nellie.ngrok-free.dev/api/logs' : 'https://firefly-arid-nellie.ngrok-free.dev/api/logs?debug=true'
+    const headers = {
+      'ngrok-skip-browser-warning': 'true'
+    }
     if (LOGS_TOKEN) headers['x-logs-token'] = LOGS_TOKEN
     fetch(url, { headers })
       .then(async (r) => {
@@ -228,7 +230,7 @@ export default function Main({ username }) {
                   ev.stopPropagation()
                   if (!confirm('Delete "' + f.filename + '"? This will remove the file from the server.')) return
                   try {
-                    const u = 'https://andreas-identify-rolled-indirect.trycloudflare.com/api/file?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(f.filename)
+                    const u = 'https://firefly-arid-nellie.ngrok-free.dev/api/file?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(f.filename)
                     const resp = await fetch(u, { 
                       method: 'DELETE',
                       headers: { 
@@ -247,7 +249,7 @@ export default function Main({ username }) {
                 }}
                 className="file-delete"
               >
-                �
+                ×
               </button>
               <div style={{display: 'flex', alignItems: 'center', gap: 12, flex: 1}}>
                 <span style={{fontSize: '11px', fontWeight: 700, color: 'var(--accent-gold)', background: 'rgba(212, 175, 55, 0.1)', padding: '4px 8px', borderRadius: 4}}>
@@ -255,7 +257,7 @@ export default function Main({ username }) {
                 </span>
                 <div style={{flex: 1, overflow: 'hidden'}}>
                   <p style={{margin: 0, fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{f.filename}</p>
-                  <p style={{margin: 0, fontSize: '12px', color: 'var(--text-secondary)'}}>{f.size} bytes � {f.uploaded_at ? new Date(f.uploaded_at).toLocaleString() : '�'}</p>
+                  <p style={{margin: 0, fontSize: '12px', color: 'var(--text-secondary)'}}>{f.size} bytes • {f.uploaded_at ? new Date(f.uploaded_at).toLocaleString() : '—'}</p>
                 </div>
               </div>
               <button 
@@ -291,7 +293,7 @@ export default function Main({ username }) {
                 <span className="logs-header-icon"></span>
                 Server Logs
               </h2>
-              <button className="logs-close-btn" onClick={() => setShowLogs(false)}>?</button>
+              <button className="logs-close-btn" onClick={() => setShowLogs(false)}>✕</button>
             </div>
 
             {/* Controls */}
@@ -313,19 +315,19 @@ export default function Main({ username }) {
                 className={`logs-filter-btn ${logFilter === 'info' ? 'active' : ''}`}
                 onClick={() => setLogFilter('info')}
               >
-                ? Info
+                ℹ Info
               </button>
               <button 
                 className={`logs-filter-btn ${logFilter === 'warn' ? 'active' : ''}`}
                 onClick={() => setLogFilter('warn')}
               >
-                ? Warn
+                ⚠ Warn
               </button>
               <button 
                 className={`logs-filter-btn ${logFilter === 'error' ? 'active' : ''}`}
                 onClick={() => setLogFilter('error')}
               >
-                ? Error
+                ✕ Error
               </button>
             </div>
 
@@ -333,7 +335,7 @@ export default function Main({ username }) {
             <div className="logs-content">
               {filterLogs().length === 0 ? (
                 <div className="logs-empty">
-                  <div className="logs-empty-icon">??</div>
+                  <div className="logs-empty-icon">📭</div>
                   <div className="logs-empty-text">No logs found</div>
                 </div>
               ) : (
@@ -374,7 +376,7 @@ export default function Main({ username }) {
                     setTimeout(() => setMsg(null), 2000)
                   }}
                 >
-                  ?? Copy All
+                  📋 Copy All
                 </button>
                 <button 
                   className="logs-btn-copy"
@@ -385,7 +387,7 @@ export default function Main({ username }) {
                     setTimeout(() => setMsg(null), 2000)
                   }}
                 >
-                  ?? Copy Filtered
+                  📋 Copy Filtered
                 </button>
               </div>
             </div>

@@ -16,10 +16,11 @@ export default function Login({ onLogin }) {
     }
     setLoading(true)
     setErr(null)
-    fetch('https://andreas-identify-rolled-indirect.trycloudflare.com/api/login', {
+    fetch('https://firefly-arid-nellie.ngrok-free.dev/api/login', {
       method: 'POST',
       headers: { 
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
       },
       body: JSON.stringify({ username: username.trim(), password })
     })
@@ -42,10 +43,11 @@ export default function Login({ onLogin }) {
     setUsername(uname)
     setPassword('')
     setTimeout(() => {
-      fetch('https://andreas-identify-rolled-indirect.trycloudflare.com/api/login', {
+      fetch('https://firefly-arid-nellie.ngrok-free.dev/api/login', {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
         },
         body: JSON.stringify({ username: uname, password: '' })
       })
@@ -137,10 +139,11 @@ export default function Login({ onLogin }) {
             }
             setLoading(true)
             setErr(null)
-            fetch('https://andreas-identify-rolled-indirect.trycloudflare.com/api/register', {
+            fetch('https://firefly-arid-nellie.ngrok-free.dev/api/register', {
               method: 'POST',
               headers: { 
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true'
               },
               body: JSON.stringify({ username: username.trim(), password })
             })
