@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react'
 
 export default function Main({ username }) {
-  const LOGS_TOKEN = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_LOGS_TOKEN) ? import.meta.env.VITE_LOGS_TOKEN : null
-  const DELETE_TOKEN = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_DELETE_TOKEN) ? import.meta.env.VITE_DELETE_TOKEN : 'dev-delete-token-123'
   const [files, setFiles] = useState([])
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -17,8 +15,8 @@ export default function Main({ username }) {
   useEffect(() => { fetchFiles() }, [])
 
   function fetchFiles() {
-    const url = 'https://firefly-arid-nellie.ngrok-free.dev/api/files?username=' + encodeURIComponent(username)
-    fetch(url, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+    const url = 'http://localhost:3001/api/files?username=' + encodeURIComponent(username)
+    fetch(url)
       .then(r => {
         if (!r.ok) {
           console.error('fetchFiles error:', r.status, r.statusText)
@@ -62,8 +60,7 @@ export default function Main({ username }) {
       setMsg({ type: 'error', text: 'Network error' })
       setUploading(false)
     })
-    xhr.open('POST', 'https://firefly-arid-nellie.ngrok-free.dev/api/upload')
-    xhr.setRequestHeader('ngrok-skip-browser-warning', 'true')
+    xhr.open('POST', 'http://localhost:3001/api/upload')
     xhr.send(formData)
   }
 
@@ -85,7 +82,7 @@ export default function Main({ username }) {
   }
 
   function download(filename) {
-    const url = 'https://firefly-arid-nellie.ngrok-free.dev/api/download?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(filename)
+    const url = 'http://localhost:3001/api/download?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(filename)
     const a = document.createElement('a')
     a.href = url
     a.download = filename
@@ -95,12 +92,7 @@ export default function Main({ username }) {
   }
 
   function fetchLogs() {
-    const url = LOGS_TOKEN ? 'https://firefly-arid-nellie.ngrok-free.dev/api/logs' : 'https://firefly-arid-nellie.ngrok-free.dev/api/logs?debug=true'
-    const headers = {
-      'ngrok-skip-browser-warning': 'true'
-    }
-    if (LOGS_TOKEN) headers['x-logs-token'] = LOGS_TOKEN
-    fetch(url, { headers })
+    fetch('http://localhost:3001/api/logs')
       .then(async (r) => {
         if (!r.ok) {
           const txt = await r.text().catch(() => '')
@@ -230,14 +222,8 @@ export default function Main({ username }) {
                   ev.stopPropagation()
                   if (!confirm('Delete "' + f.filename + '"? This will remove the file from the server.')) return
                   try {
-                    const u = 'https://firefly-arid-nellie.ngrok-free.dev/api/file?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(f.filename)
-                    const resp = await fetch(u, { 
-                      method: 'DELETE',
-                      headers: { 
-                        'x-delete-token': DELETE_TOKEN,
-                        'ngrok-skip-browser-warning': 'true'
-                      }
-                    })
+                    const u = 'http://localhost:3001/api/file?username=' + encodeURIComponent(username) + '&filename=' + encodeURIComponent(f.filename)
+                    const resp = await fetch(u, { method: 'DELETE' })
                     if (!resp.ok) throw new Error('Status ' + resp.status)
                     setMsg({ type: 'success', text: 'File deleted' })
                     // refresh list
