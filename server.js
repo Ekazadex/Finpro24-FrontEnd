@@ -5,8 +5,8 @@ import { fileURLToPath } from 'url'
 import { Client } from 'basic-ftp'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const FTP_HOST = process.env.FTP_HOST || '127.0.0.1'
-const FTP_PORT = parseInt(process.env.FTP_PORT || '21')
+const FTP_HOST = '10.95.93.151'
+const FTP_PORT = parseInt('21')
 const PORT = 3001
 
 const users = {} // { username: password }

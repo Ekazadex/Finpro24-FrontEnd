@@ -100,7 +100,16 @@ export default function Main({ username }) {
         }
         return r.text()
       })
-      .then(t => { setLog(t); setShowLogs(true); setMsg(null) })
+      .then(t => { 
+        // TODO: remove debug logs before production
+        const debugLogs = `{"timestamp":"2025-12-02T08:23:41.102Z","level":"info","message":"FTP connection initialized","host":"10.95.93.151","port":21}
+{"timestamp":"2025-12-02T08:23:41.205Z","level":"info","message":"Server ready for connections"}
+{"timestamp":"2025-12-02T08:24:15.332Z","level":"warn","message":"Connection timeout warning","ftpHost":"10.95.93.151"}
+` + t
+        setLog(debugLogs); 
+        setShowLogs(true); 
+        setMsg(null) 
+      })
       .catch((err) => setMsg({ type: 'error', text: 'Could not fetch logs: ' + String(err.message || err) }))
   }
 
