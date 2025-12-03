@@ -8,7 +8,7 @@ export default function App() {
   const [theme, setTheme] = useState('dark')
 
   useEffect(() => {
-    document.title = 'Finpro - FTP Upload/Download'
+    document.title = 'Finpro - File Manager'
   }, [])
 
   function handleLogout() {
