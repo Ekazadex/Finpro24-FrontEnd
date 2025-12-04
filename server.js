@@ -11,57 +11,6 @@ const PORT = 3001
 
 const users = {} // { username: password }
 
-// DOS Protection: Rate limiting
-const rateLimitMap = new Map() // { ip: { count, resetTime } }
-const RATE_LIMIT_WINDOW = 60000 // 1 minute
-const RATE_LIMIT_MAX = 100 // max requests per window
-
-// DOS Protection: Connection limits
-const activeConnections = new Map() // { ip: count }
-const MAX_CONNECTIONS_PER_IP = 5
-
-// DOS Protection: Upload size limit (100MB)
-const MAX_UPLOAD_SIZE = 100 * 1024 * 1024
-
-function getClientIP(req) {
-  return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
-         req.socket?.remoteAddress || 
-         'unknown'
-}
-
-function checkRateLimit(ip) {
-  const now = Date.now()
-  const record = rateLimitMap.get(ip)
-  
-  if (!record || now > record.resetTime) {
-    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW })
-    return true
-  }
-  
-  if (record.count >= RATE_LIMIT_MAX) {
-    return false
-  }
-  
-  record.count++
-  return true
-}
-
-function incrementConnection(ip) {
-  const current = activeConnections.get(ip) || 0
-  if (current >= MAX_CONNECTIONS_PER_IP) {
-    return false
-  }
-  activeConnections.set(ip, current + 1)
-  return true
-}
-
-function decrementConnection(ip) {
-  const current = activeConnections.get(ip) || 0
-  if (current > 0) {
-    activeConnections.set(ip, current - 1)
-  }
-}
-
 // Generic error messages to hide implementation details
 function sanitizeError(message) {
   const lowerMsg = message.toLowerCase()
@@ -82,7 +31,6 @@ function sanitizeError(message) {
 
 async function getStorageClient(username, password) {
   const client = new Client()
-  client.ftp.timeout = 10000 // 10 second timeout to prevent hanging connections
   await client.access({ host: FTP_HOST, port: FTP_PORT, user: username, password, secure: true, secureOptions: { rejectUnauthorized: false } })
   return client
 }
@@ -139,18 +87,6 @@ const server = http.createServer(async (req, res) => {
   cors(res)
   if (req.method === 'OPTIONS') return res.end()
   
-  const clientIP = getClientIP(req)
-  
-  // DOS Protection: Rate limiting check
-  if (!checkRateLimit(clientIP)) {
-    return json(res, { ok: false, message: 'Too many requests. Please try again later.' }, 429)
-  }
-  
-  // DOS Protection: Connection limit check
-  if (!incrementConnection(clientIP)) {
-    return json(res, { ok: false, message: 'Too many concurrent connections. Please try again later.' }, 429)
-  }
-  
   const url = new URL(req.url, `http://localhost:${PORT}`)
   const p = url.pathname
 
@@ -165,8 +101,6 @@ const server = http.createServer(async (req, res) => {
         return json(res, { ok: true })
       } catch (e) {
         return json(res, { ok: false, message: sanitizeError(e.message) })
-      } finally {
-        decrementConnection(clientIP)
       }
     }
 
@@ -180,30 +114,12 @@ const server = http.createServer(async (req, res) => {
         return json(res, { files: list.map(f => ({ filename: f.name, size: f.size, uploaded_at: f.modifiedAt?.toISOString() })) })
       } catch (e) {
         return json(res, { ok: false, message: sanitizeError(e.message) }, 500)
-      } finally {
-        decrementConnection(clientIP)
       }
     }
 
     if (p === '/api/upload' && req.method === 'POST') {
-      // DOS Protection: Check content length before processing
-      const contentLength = parseInt(req.headers['content-length'] || '0')
-      if (contentLength > MAX_UPLOAD_SIZE) {
-        decrementConnection(clientIP)
-        return json(res, { ok: false, message: 'File too large. Maximum size is 10MB.' }, 413)
-      }
-      
       const { fields, file } = await parseMultipart(req)
-      if (!file) {
-        decrementConnection(clientIP)
-        return json(res, { ok: false, message: 'No file' }, 400)
-      }
-      
-      // DOS Protection: Double check file size after parsing
-      if (file.data.length > MAX_UPLOAD_SIZE) {
-        decrementConnection(clientIP)
-        return json(res, { ok: false, message: 'File too large. Maximum size is 10MB.' }, 413)
-      }
+      if (!file) return json(res, { ok: false, message: 'No file' }, 400)
       
       const username = fields.username
       const password = users[username] || ''
@@ -218,7 +134,6 @@ const server = http.createServer(async (req, res) => {
         return json(res, { ok: false, message: sanitizeError(e.message) }, 500)
       } finally {
         if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath)
-        decrementConnection(clientIP)
       }
     }
 
@@ -238,7 +153,6 @@ const server = http.createServer(async (req, res) => {
         return json(res, { ok: false, message: sanitizeError(e.message) }, 500)
       } finally {
         if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath)
-        decrementConnection(clientIP)
       }
     }
 
@@ -253,20 +167,15 @@ const server = http.createServer(async (req, res) => {
         return json(res, { ok: true })
       } catch (e) {
         return json(res, { ok: false, message: sanitizeError(e.message) }, 500)
-      } finally {
-        decrementConnection(clientIP)
       }
     }
 
     if (p === '/api/logs') {
-      decrementConnection(clientIP)
       return json(res, { logs: 'Server logs - no entries available' })
     }
 
-    decrementConnection(clientIP)
     json(res, { error: 'Not found' }, 404)
   } catch (e) {
-    decrementConnection(clientIP)
     json(res, { ok: false, message: sanitizeError(e.message) }, 500)
   }
 })

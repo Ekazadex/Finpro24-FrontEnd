@@ -1,39 +1,14 @@
-import React, { useState, useRef } from 'react'
-
-// DOS Protection: Rate limiting for login attempts
-const LOGIN_COOLDOWN_MS = 2000 // 2 seconds between attempts
-const MAX_LOGIN_ATTEMPTS = 5
-const LOCKOUT_DURATION_MS = 60000 // 1 minute lockout after max attempts
+import React, { useState } from 'react'
 
 export default function Login({ onLogin }) {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [err, setErr] = useState(null)
   const [loading, setLoading] = useState(false)
-  
-  // DOS Protection state
-  const [loginAttempts, setLoginAttempts] = useState(0)
-  const [lockedUntil, setLockedUntil] = useState(null)
-  const lastSubmitTime = useRef(0)
 
   function submit(e) {
     e.preventDefault()
     if (!username.trim()) return setErr('Username is required')
-    
-    const now = Date.now()
-    
-    // DOS Protection: Check if user is locked out
-    if (lockedUntil && now < lockedUntil) {
-      const remainingSecs = Math.ceil((lockedUntil - now) / 1000)
-      return setErr(`Too many attempts. Please wait ${remainingSecs} seconds.`)
-    }
-    
-    // DOS Protection: Prevent rapid submissions (debounce)
-    if (now - lastSubmitTime.current < LOGIN_COOLDOWN_MS) {
-      return setErr('Please wait before trying again.')
-    }
-    lastSubmitTime.current = now
-    
     setLoading(true)
     setErr(null)
     fetch('http://localhost:3001/api/login', {
@@ -44,22 +19,7 @@ export default function Login({ onLogin }) {
       .then(r => r.json())
       .then(data => {
         setLoading(false)
-        if (data?.ok) {
-          setLoginAttempts(0) // Reset on success
-          onLogin(username.trim())
-        } else {
-          // DOS Protection: Track failed attempts
-          const newAttempts = loginAttempts + 1
-          setLoginAttempts(newAttempts)
-          
-          if (newAttempts >= MAX_LOGIN_ATTEMPTS) {
-            setLockedUntil(Date.now() + LOCKOUT_DURATION_MS)
-            setLoginAttempts(0)
-            setErr('Too many failed attempts. Please wait 1 minute.')
-          } else {
-            setErr(data?.message || 'Login failed')
-          }
-        }
+        data?.ok ? onLogin(username.trim()) : setErr(data?.message || 'Login failed')
       })
       .catch(() => { setLoading(false); setErr('Unable to reach backend') })
   }

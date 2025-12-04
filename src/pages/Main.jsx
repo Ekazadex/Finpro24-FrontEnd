@@ -1,10 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-
-// DOS Protection: Rate limiting configuration
-const API_COOLDOWN_MS = 1000 // 1 second between API calls
-const UPLOAD_COOLDOWN_MS = 3000 // 3 seconds between uploads
-const MAX_REQUESTS_PER_MINUTE = 30
-const RATE_LIMIT_WINDOW_MS = 60000 // 1 minute
+import React, { useState, useEffect } from 'react'
 
 export default function Main({ username }) {
   const [files, setFiles] = useState([])
@@ -17,47 +11,10 @@ export default function Main({ username }) {
   const [logFilter, setLogFilter] = useState('all') // 'all', 'info', 'warn', 'error'
   const [logSearch, setLogSearch] = useState('')
   const fileInputRef = React.useRef(null)
-  
-  // DOS Protection: Rate limiting state
-  const requestCount = useRef(0)
-  const requestWindowStart = useRef(Date.now())
-  const lastFetchTime = useRef(0)
-  const lastUploadTime = useRef(0)
-  const lastDeleteTime = useRef(0)
-  const lastLogsTime = useRef(0)
-  
-  // DOS Protection: Check if we can make a request
-  const canMakeRequest = useCallback((lastTimeRef, cooldownMs) => {
-    const now = Date.now()
-    
-    // Reset window if expired
-    if (now - requestWindowStart.current > RATE_LIMIT_WINDOW_MS) {
-      requestCount.current = 0
-      requestWindowStart.current = now
-    }
-    
-    // Check rate limit
-    if (requestCount.current >= MAX_REQUESTS_PER_MINUTE) {
-      setMsg({ type: 'error', text: 'Too many requests. Please wait a moment.' })
-      return false
-    }
-    
-    // Check cooldown
-    if (now - lastTimeRef.current < cooldownMs) {
-      return false
-    }
-    
-    lastTimeRef.current = now
-    requestCount.current++
-    return true
-  }, [])
 
   useEffect(() => { fetchFiles() }, [])
 
   function fetchFiles() {
-    // DOS Protection: Rate limit check
-    if (!canMakeRequest(lastFetchTime, API_COOLDOWN_MS)) return
-    
     const url = 'http://localhost:3001/api/files?username=' + encodeURIComponent(username)
     fetch(url)
       .then(r => {
@@ -76,13 +33,6 @@ export default function Main({ username }) {
 
   function uploadFile(file) {
     if (!file) return
-    
-    // DOS Protection: Rate limit check for uploads
-    if (!canMakeRequest(lastUploadTime, UPLOAD_COOLDOWN_MS)) {
-      setMsg({ type: 'error', text: 'Please wait before uploading another file.' })
-      return
-    }
-    
     const formData = new FormData()
     formData.append('file', file)
     formData.append('username', username)
@@ -100,8 +50,7 @@ export default function Main({ username }) {
         setUploading(false)
         setUploadProgress(0)
         setTimeout(() => setMsg(null), 3000)
-        // Use setTimeout to avoid immediate fetch after upload
-        setTimeout(fetchFiles, 500)
+        fetchFiles()
       } else {
         setMsg({ type: 'error', text: 'Upload failed' })
         setUploading(false)
@@ -143,12 +92,6 @@ export default function Main({ username }) {
   }
 
   function fetchLogs() {
-    // DOS Protection: Rate limit check for logs
-    if (!canMakeRequest(lastLogsTime, API_COOLDOWN_MS)) {
-      setMsg({ type: 'error', text: 'Please wait before fetching logs again.' })
-      return
-    }
-    
     fetch('http://localhost:3001/api/logs')
       .then(async (r) => {
         if (!r.ok) {
@@ -160,14 +103,8 @@ export default function Main({ username }) {
       .then(t => { setLog(t); setShowLogs(true); setMsg(null) })
       .catch((err) => setMsg({ type: 'error', text: 'Could not fetch logs: ' + String(err.message || err) }))
   }
-  
-  // DOS Protection: Rate-limited delete function
+
   async function deleteFile(filename) {
-    if (!canMakeRequest(lastDeleteTime, API_COOLDOWN_MS)) {
-      setMsg({ type: 'error', text: 'Please wait before deleting another file.' })
-      return
-    }
-    
     if (!confirm('Delete "' + filename + '"? This will remove the file from the server.')) return
     
     try {
@@ -175,7 +112,7 @@ export default function Main({ username }) {
       const resp = await fetch(u, { method: 'DELETE' })
       if (!resp.ok) throw new Error('Status ' + resp.status)
       setMsg({ type: 'success', text: 'File deleted' })
-      setTimeout(fetchFiles, 500)
+      fetchFiles()
       setTimeout(() => setMsg(null), 2500)
     } catch (err) {
       setMsg({ type: 'error', text: 'Delete failed: ' + String(err.message || err) })
